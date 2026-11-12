@@ -180,6 +180,35 @@ assert.strictEqual(
 // does not throw
 util.styleText('red', 'text', { stream: {}, validateStream: false });
 
+// Customizations of `util.inspect.colors` are honored on every code path,
+// including after the format has been used (and cached) before.
+{
+  const original = util.inspect.colors.red;
+  const opts = { validateStream: false };
+  assert.strictEqual(util.styleText('red', 'test', opts), styled);
+  assert.strictEqual(util.styleText(['red'], 'test', opts), styled);
+
+  util.inspect.colors.red = [91, 39];
+  const custom = '\u001b[91mtest\u001b[39m';
+  assert.strictEqual(util.styleText('red', 'test', opts), custom);
+  assert.strictEqual(util.styleText(['red'], 'test', opts), custom);
+
+  util.inspect.colors.red[0] = 95;
+  assert.strictEqual(util.styleText('red', 'test', opts),
+                     '\u001b[95mtest\u001b[39m');
+
+  delete util.inspect.colors.red;
+  assert.throws(() => util.styleText('red', 'test', opts), {
+    code: 'ERR_INVALID_ARG_VALUE',
+  });
+  assert.throws(() => util.styleText(['red'], 'test', opts), {
+    code: 'ERR_INVALID_ARG_VALUE',
+  });
+
+  util.inspect.colors.red = original;
+  assert.strictEqual(util.styleText('red', 'test', opts), styled);
+}
+
 assert.strictEqual(
   util.styleText('red', 'test', { validateStream: false }),
   styled,

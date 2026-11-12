@@ -20,7 +20,7 @@ const bench = common.createBenchmark(main, {
   messageType: ['string', 'number', 'boolean', 'invalid'],
   // '#rotating' cycles through kHexColorCount distinct colors to simulate
   // the high-miss-rate / large-cache scenario (e.g. user-randomised colors).
-  format: ['red', 'italic', 'invalid', '#ff0000', '#rotating'],
+  format: ['red', 'italic', 'bold,red', 'invalid', '#ff0000', '#rotating'],
   validateStream: [1, 0],
   n: [1e3],
 });
@@ -42,12 +42,14 @@ function main({ messageType, format, validateStream, n }) {
       break;
   }
 
+  const formatValue = format.includes(',') ? format.split(',') : format;
+
   bench.start();
   for (let i = 0; i < n; i++) {
-    const fmt = format === '#rotating' ? hexColors[i % kHexColorCount] : format;
+    const fmt = format === '#rotating' ? hexColors[i % kHexColorCount] : formatValue;
     let colored = '';
     try {
-      colored = styleText(fmt, str, { validateStream });
+      colored = styleText(fmt, str, { validateStream: !!validateStream });
       assert.ok(colored); // Attempt to avoid dead-code elimination
     } catch {
       // eslint-disable no-empty
