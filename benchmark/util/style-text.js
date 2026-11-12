@@ -47,7 +47,7 @@ function main({ messageType, format, validateStream, n }) {
     const fmt = format === '#rotating' ? hexColors[i % kHexColorCount] : format;
     let colored = '';
     try {
-      colored = styleText(fmt, str, { validateStream });
+      colored = styleText(fmt, str, { validateStream: !!validateStream });
       assert.ok(colored); // Attempt to avoid dead-code elimination
     } catch {
       // eslint-disable no-empty
